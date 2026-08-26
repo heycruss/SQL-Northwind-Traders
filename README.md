@@ -49,27 +49,18 @@ The analysis uses the following tables:
 
 ### Table Relationships
 
-The main relationships are:
+## Main Table Relationships
 
-raw_customers
-      │
- customerID
-      ▼
-raw_orders ◄──── employeeID ──── raw_employees
-      │
-      ├──── shipperID ─────────── raw_shippers
-      │
-    orderID
-      ▼
-raw_order_details
-      │
-  productID
-      ▼
-raw_products
-      │
- categoryID
-      ▼
-raw_categories
+The dataset is structured around orders, which connect customers, employees, and shippers. Order details link each order to the products purchased, while products are grouped into categories.
+
+- `raw_employees` → `raw_orders`: `employeeID`
+- `raw_customers` → `raw_orders`: `customerID`
+- `raw_shippers` → `raw_orders`: `shipperID`
+- `raw_orders` → `raw_order_details`: `orderID`
+- `raw_products` → `raw_order_details`: `productID`
+- `raw_categories` → `raw_products`: `categoryID`
+
+
 
 ## 4. Data Validation & Data Quality
 
