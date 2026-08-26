@@ -51,23 +51,25 @@ The analysis uses the following tables:
 
 The main relationships are:
 
-                               raw_employees
-                                    │
-                                    │ employeeID
-                                    ▼
-raw_customers ── customerID ──► raw_orders ◄── shipperID ── raw_shippers
-                                   │
-                                   │ orderID
-                                   ▼
-                           raw_order_details
-                                   │
-                                   │ productID
-                                   ▼
-                              raw_products
-                                   │
-                                   │ categoryID
-                                   ▼
-                             raw_categories
+raw_customers
+      │
+ customerID
+      ▼
+raw_orders ◄──── employeeID ──── raw_employees
+      │
+      ├──── shipperID ─────────── raw_shippers
+      │
+    orderID
+      ▼
+raw_order_details
+      │
+  productID
+      ▼
+raw_products
+      │
+ categoryID
+      ▼
+raw_categories
 
 ## 4. Data Validation & Data Quality
 
