@@ -64,6 +64,28 @@ The dataset is structured around orders, which connect customers, employees, and
 
 ## 4. Data Validation & Data Quality
 
+Before performing the analysis, the dataset was validated to ensure data consistency, completeness, and referential integrity.
+
+The validation process included:
+
+- **Table and record counts** — verifying that all expected tables contain data and checking the number of records in each table.
+- **Duplicate records** — identifying potential duplicate records in tables where unique identifiers are expected.
+- **NULL values** — checking for missing values in key fields and identifying columns that may affect the analysis.
+- **Referential integrity** — verifying that foreign key relationships between tables are consistent and that there are no orphan records.
+- **Data consistency** — checking that values follow the expected format and logical constraints of the dataset.
+
+These checks help ensure that the subsequent analysis is based on reliable and consistent data.
+
+### Unique Identifier in `raw_order_details`
+
+During the validation process, it was identified that `raw_order_details` does not contain a single column that uniquely identifies each record.
+
+`orderID` is not unique because a single order can contain multiple products, while `productID` is not unique because the same product can appear in multiple orders.
+
+To uniquely identify each order detail record, the combination of:
+
+`orderID + productID`
+
 ## 5. Analysis
 
 ### 5.1 Revenue Analysis
