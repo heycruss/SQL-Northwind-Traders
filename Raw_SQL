@@ -1,0 +1,687 @@
+-- ============================================================
+-- 1. DATA VALIDATION AND DATA QUALITY
+-- ============================================================
+
+-- 1.1 Table overview
+-- Quick inspection of the raw tables
+
+SELECT * FROM raw_employees LIMIT 10; 
+SELECT * FROM raw_customers LIMIT 10;
+SELECT * FROM raw_categories LIMIT 10;
+SELECT * FROM raw_order_details LIMIT 10;
+SELECT * FROM raw_orders LIMIT 10;
+SELECT * FROM raw_products LIMIT 10;
+SELECT * FROM raw_shippers LIMIT 10;
+
+-- 1.2 Row counts
+
+SELECT 'raw_employees' AS table_name, COUNT(*) AS row_count FROM raw_employees
+UNION ALL
+SELECT 'raw_customers', COUNT(*) FROM raw_customers
+UNION ALL
+SELECT 'raw_categories', COUNT(*) FROM raw_categories
+UNION ALL
+SELECT 'raw_order_details', COUNT(*) FROM raw_order_details
+UNION ALL
+SELECT 'raw_orders', COUNT(*) FROM raw_orders
+UNION ALL
+SELECT 'raw_products', COUNT(*) FROM raw_products
+UNION ALL
+SELECT 'raw_shippers', COUNT(*) FROM raw_shippers;
+
+-- 1.3 Duplicate IDs
+
+-- Dimension and order header tables should have unique primary keys
+
+SELECT employeeID, COUNT(*) AS occurrences
+FROM raw_employees
+GROUP BY employeeID
+HAVING COUNT(*) > 1;
+
+SELECT customerID, COUNT(*) AS occurrences
+FROM raw_customers
+GROUP BY customerID
+HAVING COUNT(*) > 1;
+
+SELECT categoryID, COUNT(*) AS occurrences
+FROM raw_categories
+GROUP BY categoryID
+HAVING COUNT(*) > 1;
+
+SELECT orderID, COUNT(*) AS occurrences
+FROM raw_orders
+GROUP BY orderID
+HAVING COUNT(*) > 1;
+
+SELECT productID, COUNT(*) AS occurrences
+FROM raw_products
+GROUP BY productID
+HAVING COUNT(*) > 1;
+
+SELECT shipperID, COUNT(*) AS occurrences
+FROM raw_shippers
+GROUP BY shipperID
+HAVING COUNT(*) > 1;
+
+-- raw_order_details is a transactional table.
+-- Multiple rows per order are expected because one order
+-- can contain multiple products.
+
+SELECT 
+    orderID,
+    productID,
+    COUNT(*) AS occurrences
+FROM raw_order_details
+GROUP BY orderID, productID
+HAVING COUNT(*) > 1;
+
+-- No duplicate orderID + productID combinations were found.
+-- Therefore, orderID + productID could be used as a composite key for raw_order_details.
+
+-- 1.4 NULL checks on key columns
+
+SELECT 
+    SUM(customerID IS NULL) AS missing_customerID
+FROM raw_customers;
+
+SELECT 
+    SUM(orderID IS NULL) AS missing_orderID,
+    SUM(productID IS NULL) AS missing_productID
+FROM raw_order_details;
+
+SELECT 
+    SUM(orderID IS NULL) AS missing_orderID,
+    SUM(customerID IS NULL) AS missing_customerID,
+    SUM(employeeID IS NULL) AS missing_employeeID,
+    SUM(shipperID IS NULL) AS missing_shipperID
+FROM raw_orders;
+
+SELECT 
+    SUM(productID IS NULL) AS missing_productID,
+    SUM(categoryID IS NULL) AS missing_categoryID
+FROM raw_products;
+
+
+-- 1.5 Referential integrity
+
+SELECT *
+FROM raw_order_details AS ROD
+LEFT JOIN raw_orders AS RO ON ROD.orderID = RO.orderID
+LEFT JOIN raw_products AS PRO ON ROD.productID = PRO.productID
+LEFT JOIN raw_categories AS CAT ON PRO.categoryID = CAT.categoryID
+LEFT JOIN raw_customers AS CUS ON RO.customerID = CUS.customerID
+LEFT JOIN raw_employees AS EMP ON RO.employeeID = EMP.employeeID
+LEFT JOIN raw_shippers AS SHIPP ON RO.shipperID = SHIPP.shipperID 
+WHERE 
+	RO.orderID IS NULL OR 
+    PRO.productID  IS NULL OR 
+    CAT.categoryID  IS NULL OR 
+    CUS.customerID  IS NULL OR 
+    EMP.employeeID  IS NULL OR 
+    SHIPP.shipperID   IS NULL
+    ;
+    
+-- ============================================================
+-- DATA QUALITY CONCLUSION
+-- ============================================================
+
+-- No duplicated primary keys were found in the dimension and order header tables.
+-- No NULL values were found in the key columns tested.
+-- No broken relationships were found between order details and the related dimension tables.
+-- Multiple rows with the same orderID in raw_order_details are expected,
+-- as one order can contain multiple products.
+-- We could consider creating a unique ID by combining orderID and productID.
+
+-- ============================================================
+-- 2. REVENUE
+-- ============================================================
+
+
+-- Total Revenue 
+
+SELECT
+    SUM(ROD.unitPrice * ROD.quantity) AS total_revenue
+FROM raw_order_details AS ROD;
+
+-- Revenue Trend
+
+WITH monthly_revenue AS (
+    SELECT 
+        YEAR(RO.orderDate) AS year,
+        MONTH(RO.orderDate) AS month,
+        ROUND(
+            SUM(ROD.unitPrice * ROD.quantity),
+            0
+        ) AS revenue
+    FROM raw_order_details AS ROD
+    LEFT JOIN raw_orders AS RO 
+        ON ROD.orderID = RO.orderID
+    GROUP BY
+        YEAR(RO.orderDate),
+        MONTH(RO.orderDate)
+),
+
+monthly_growth AS (
+    SELECT
+        year,
+        month,
+        revenue,
+
+        LAG(revenue) OVER (
+            ORDER BY year, month
+        ) AS previous_month_revenue
+
+    FROM monthly_revenue
+)
+
+SELECT 
+    year,
+    month,
+    revenue,
+
+    ROUND(
+        100 * revenue
+        / SUM(revenue) OVER (PARTITION BY year),
+        2
+    ) AS pct_year_revenue,
+
+    ROUND(
+        100 * revenue
+        / SUM(revenue) OVER (),
+        2
+    ) AS pct_total_revenue,
+
+    ROUND(
+        100 * (revenue - previous_month_revenue)
+        / previous_month_revenue,
+        2
+    ) AS revenue_growth_pct
+
+FROM monthly_growth
+ORDER BY
+    year,
+    month;
+
+
+-- ============================================================
+-- 3. PRODUCT PERFORMANCE
+-- ============================================================
+
+-- Total revenue and share revenue by product
+
+WITH product_revenue AS(
+SELECT
+RP.productName,
+ROUND(SUM(ROD.unitPrice * ROD.quantity),2) AS revenue
+FROM raw_order_details AS ROD
+LEFT JOIN raw_products AS RP ON RP.productID = ROD.productID
+GROUP BY RP.productName
+)
+
+SELECT
+    productName,
+    revenue,
+    ROUND(
+        revenue / SUM(revenue) OVER() * 100,
+        2
+    ) AS revenue_share
+FROM product_revenue
+ORDER BY revenue DESC;
+
+-- Best product of every month 
+
+WITH monthly_product_revenue AS (
+    SELECT
+        YEAR(RO.orderDate) AS year,
+        MONTH(RO.orderDate) AS month,
+        RP.productName,
+        SUM(ROD.unitPrice * ROD.quantity) AS revenue
+    FROM raw_order_details AS ROD
+    JOIN raw_orders AS RO
+        ON ROD.orderID = RO.orderID
+    JOIN raw_products AS RP
+        ON ROD.productID = RP.productID
+    GROUP BY
+        YEAR(RO.orderDate),
+        MONTH(RO.orderDate),
+        RP.productName
+),
+
+ranked_products AS (
+    SELECT
+        year,
+        month,
+        productName,
+        revenue,
+
+        RANK() OVER (
+            PARTITION BY year, month
+            ORDER BY revenue DESC
+        ) AS product_rank,
+
+        SUM(revenue) OVER (
+            PARTITION BY year, month
+        ) AS monthly_revenue
+
+    FROM monthly_product_revenue
+)
+
+SELECT
+    year,
+    month,
+    productName,
+    ROUND(revenue, 2) AS revenue,
+    ROUND(
+        revenue / monthly_revenue * 100,
+        2
+    ) AS revenue_share
+FROM ranked_products
+WHERE product_rank = 1
+ORDER BY year, month;
+
+-- Best product of every year 
+
+WITH yearly_product_revenue AS (
+    SELECT
+        YEAR(RO.orderDate) AS year,
+        RP.productName,
+        SUM(ROD.unitPrice * ROD.quantity) AS revenue
+    FROM raw_order_details AS ROD
+    JOIN raw_orders AS RO
+        ON ROD.orderID = RO.orderID
+    JOIN raw_products AS RP
+        ON ROD.productID = RP.productID
+    GROUP BY
+        YEAR(RO.orderDate),
+        RP.productName
+),
+
+ranked_products AS (
+    SELECT
+        year,
+        productName,
+        revenue,
+
+        RANK() OVER (
+            PARTITION BY year
+            ORDER BY revenue DESC
+        ) AS product_rank,
+
+        SUM(revenue) OVER (
+            PARTITION BY year
+        ) AS yearly_revenue
+
+    FROM yearly_product_revenue
+)
+
+SELECT
+    year,
+    productName,
+    ROUND(revenue, 2) AS revenue,
+    ROUND(
+        revenue / yearly_revenue * 100,
+        2
+    ) AS revenue_share
+FROM ranked_products
+WHERE product_rank = 1
+ORDER BY year; 
+
+-- Revenue share of top X products
+
+WITH product_revenue AS (
+    SELECT
+        RP.productID,
+        RP.productName,
+        SUM(ROD.unitPrice * ROD.quantity) AS revenue
+    FROM raw_order_details AS ROD
+    JOIN raw_products AS RP
+        ON ROD.productID = RP.productID
+    GROUP BY
+        RP.productID,
+        RP.productName
+),
+
+ranked_products AS (
+    SELECT
+        productID,
+        productName,
+        revenue,
+
+        RANK() OVER (
+            ORDER BY revenue DESC
+        ) AS product_rank,
+
+        SUM(revenue) OVER () AS total_revenue
+
+    FROM product_revenue
+)
+
+SELECT
+    COUNT(*) AS products_included,
+    ROUND(SUM(revenue), 2) AS top_products_revenue,
+    ROUND(
+        SUM(revenue) / MAX(total_revenue) * 100,
+        2
+    ) AS revenue_share
+FROM ranked_products
+WHERE product_rank <= 5;
+
+-- We can choose the top X just by editing this last one line of code (WHERE product_rank <= X;)
+
+-- ============================================================
+-- 4. Category Performance
+-- ============================================================
+
+WITH category_revenue AS (
+    SELECT
+        CAT.categoryID,
+        CAT.categoryName,
+        SUM(ROD.unitPrice * ROD.quantity) AS revenue
+    FROM raw_order_details AS ROD
+    JOIN raw_products AS PRO
+        ON ROD.productID = PRO.productID
+    JOIN raw_categories AS CAT
+        ON PRO.categoryID = CAT.categoryID
+    GROUP BY
+        CAT.categoryID,
+        CAT.categoryName
+)
+
+SELECT
+    categoryID,
+    categoryName,
+    ROUND(revenue, 2) AS revenue,
+    ROUND(
+        revenue / SUM(revenue) OVER () * 100,
+        2
+    ) AS revenue_share
+FROM category_revenue
+ORDER BY revenue DESC;
+
+-- Revenue growth by category and year
+
+WITH category_yearly_revenue AS (
+    SELECT
+        YEAR(RO.orderDate) AS year,
+        CAT.categoryName,
+       SUM(ROD.unitPrice * ROD.quantity) AS revenue
+    FROM raw_order_details AS ROD
+    JOIN raw_orders AS RO
+        ON ROD.orderID = RO.orderID
+    JOIN raw_products AS PRO
+        ON ROD.productID = PRO.productID
+    JOIN raw_categories AS CAT
+        ON PRO.categoryID = CAT.categoryID
+    GROUP BY
+        YEAR(RO.orderDate),
+        CAT.categoryName
+),
+
+category_growth AS (
+    SELECT
+        year,
+        categoryName,
+        revenue,
+        LAG(revenue) OVER (
+            PARTITION BY categoryName
+            ORDER BY year
+        ) AS previous_year_revenue
+    FROM category_yearly_revenue
+)
+
+SELECT
+    year,
+    categoryName,
+    revenue,
+    ROUND(
+        (revenue - previous_year_revenue)
+        / NULLIF(previous_year_revenue, 0) * 100,
+        2
+    ) AS revenue_growth_pct
+FROM category_growth
+ORDER BY
+    categoryName,
+    year;
+    
+-- ============================================================
+-- 5. Customer Analysis
+-- ============================================================
+
+-- Top customers by revenue and revenue share
+
+WITH customer_revenue AS (
+    SELECT
+		CUS.customerID,
+        CUS.companyName,
+        COUNT(DISTINCT RO.orderID) AS orders,
+        ROUND(
+            SUM(ROD.unitPrice * ROD.quantity),
+            2
+        ) AS revenue
+    FROM raw_customers AS CUS
+    JOIN raw_orders AS RO
+        ON CUS.customerID = RO.customerID
+    JOIN raw_order_details AS ROD
+        ON RO.orderID = ROD.orderID
+    GROUP BY
+		CUS.customerID,
+		CUS.companyName
+)
+
+SELECT
+	customerID,
+    companyName,
+    orders,
+    revenue,
+    ROUND(
+        revenue / SUM(revenue) OVER () * 100,
+        2
+    ) AS revenue_share,
+    NTILE(4) OVER (
+        ORDER BY revenue DESC
+    ) AS revenue_quartile
+FROM customer_revenue
+ORDER BY revenue DESC;
+
+-- Repeat Customers / Customer Loyalty
+
+-- We can choose the minimum number of orders required to consider a customer loyal:
+SET @min_orders = 10;
+
+WITH customer_orders AS (
+    SELECT
+        CUS.customerID,
+        CUS.companyName,
+        COUNT(DISTINCT RO.orderID) AS orders,
+        MIN(RO.orderDate) AS first_order,
+        MAX(RO.orderDate) AS last_order,
+        ROUND(
+            SUM(ROD.unitPrice * ROD.quantity),
+            2
+        ) AS revenue
+    FROM raw_customers AS CUS
+    JOIN raw_orders AS RO
+        ON CUS.customerID = RO.customerID
+    JOIN raw_order_details AS ROD
+        ON RO.orderID = ROD.orderID
+    GROUP BY
+        CUS.customerID,
+        CUS.companyName
+)
+
+SELECT
+    companyname,
+    orders,
+    first_order,
+    last_order,
+    revenue,
+
+    ROUND(
+        revenue / SUM(revenue) OVER () * 100,
+        2
+    ) AS revenue_share,
+
+    CASE
+        WHEN orders >= @min_orders THEN 'Loyal'
+        ELSE 'Not Loyal'
+    END AS customer_status
+
+FROM customer_orders
+ORDER BY
+    orders DESC;
+    
+-- ============================================================
+-- 6. Employee Performance
+-- ============================================================
+
+-- Revenue, orders, units sold and revenue share per employee
+
+WITH employee_performance AS (
+    SELECT
+        EMP.employeeID,
+        EMP.employeeName,
+        COUNT(DISTINCT RO.orderID) AS orders,
+        SUM(ROD.quantity) AS units_sold,
+        ROUND(
+            SUM(ROD.unitPrice * ROD.quantity),
+            2
+        ) AS revenue
+    FROM raw_employees AS EMP
+    JOIN raw_orders AS RO
+        ON EMP.employeeID = RO.employeeID
+    JOIN raw_order_details AS ROD
+        ON RO.orderID = ROD.orderID
+    GROUP BY
+        EMP.employeeID,
+        EMP.employeeName
+)
+
+SELECT
+    employeeName,
+    orders,
+    units_sold,
+    revenue,
+    ROUND(
+        revenue / orders,
+        2
+    ) AS average_order_value,
+    ROUND(
+        revenue / SUM(revenue) OVER () * 100,
+        2
+    ) AS revenue_share
+FROM employee_performance
+ORDER BY revenue DESC;
+
+-- ============================================================
+-- 7. Shipping Performance
+-- ============================================================
+
+WITH order_shipping AS (
+    SELECT
+        RO.orderID,
+        RO.shipperID,
+        RO.orderDate,
+        RO.shippedDate,
+        RO.freight,
+        SUM(ROD.unitPrice * ROD.quantity) AS revenue,
+        SUM(ROD.quantity) AS units_sold
+    FROM raw_orders AS RO
+    JOIN raw_order_details AS ROD
+        ON RO.orderID = ROD.orderID
+    GROUP BY
+        RO.orderID,
+        RO.shipperID,
+        RO.orderDate,
+        RO.shippedDate,
+        RO.freight
+)
+
+SELECT
+    SHIPP.companyName AS shipper,
+    COUNT(DISTINCT orderID) AS orders,
+    SUM(units_sold) AS units_sold,
+    ROUND(SUM(revenue), 2) AS revenue,
+    ROUND(SUM(freight), 2) AS shipping_cost,
+
+    ROUND(
+        SUM(revenue) / SUM(SUM(revenue)) OVER () * 100,
+        2
+    ) AS revenue_share,
+
+    ROUND(
+        SUM(freight) / SUM(revenue) * 100,
+        2
+    ) AS freight_pct_of_revenue,
+
+    ROUND(
+        AVG(DATEDIFF(shippedDate, orderDate)),
+        2
+    ) AS avg_days_to_ship
+
+FROM order_shipping AS OS
+JOIN raw_shippers AS SHIPP
+    ON OS.shipperID = SHIPP.shipperID
+
+GROUP BY
+    SHIPP.shipperID,
+    SHIPP.companyName
+
+ORDER BY
+    avg_days_to_ship;
+    
+-- ============================================================
+-- 8. Best product per category
+-- ============================================================
+
+-- Best-selling product in each category
+
+WITH product_category_revenue AS (
+    SELECT
+        CAT.categoryID,
+        CAT.categoryName,
+        PRO.productID,
+        PRO.productName,
+        SUM(ROD.unitPrice * ROD.quantity) AS revenue
+    FROM raw_order_details AS ROD
+    JOIN raw_products AS PRO
+        ON ROD.productID = PRO.productID
+    JOIN raw_categories AS CAT
+        ON PRO.categoryID = CAT.categoryID
+    GROUP BY
+        CAT.categoryID,
+        CAT.categoryName,
+        PRO.productID,
+        PRO.productName
+),
+
+ranked_products AS (
+    SELECT
+        categoryID,
+        categoryName,
+        productID,
+        productName,
+        revenue,
+
+        RANK() OVER (
+			PARTITION BY categoryID
+			ORDER BY revenue DESC
+				) AS product_rank,
+
+        SUM(revenue) OVER (
+            PARTITION BY categoryID
+        ) AS category_revenue
+
+    FROM product_category_revenue
+)
+
+SELECT
+    categoryName,
+    productName,
+    ROUND(revenue, 2) AS revenue,
+    ROUND(
+        revenue / category_revenue * 100,
+        2
+    ) AS category_revenue_share
+FROM ranked_products
+WHERE product_rank = 1
+ORDER BY categoryName;
