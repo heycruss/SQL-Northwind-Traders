@@ -119,11 +119,11 @@ To uniquely identify each order detail record, the combination of:
 
 ### 5.6 Shipping Performance
 
-![SQL-Northwind-Traders](Images/6.Shipper_analysis.png)
+![SQL-Northwind-Traders](Images/7.Shipper_analysis.png)
 
 ### 5.7 Best Product per Category
 
-![SQL-Northwind-Traders](Images/8.Best_product_of_each_caterogy.png)
+![SQL-Northwind-Traders](Images/8.Best_product_of_each_category.png)
 
 ## 6. Key Findings
 
