@@ -49,7 +49,6 @@ The analysis uses the following tables:
 
 ### Table Relationships
 
-## Main Table Relationships
 
 The dataset is structured around orders, which connect customers, employees, and shippers. Order details link each order to the products purchased, while products are grouped into categories.
 
@@ -141,7 +140,7 @@ To uniquely identify each order detail record, the combination of:
 
 - Revenue is relatively well distributed across employees, with no single employee accounting for a disproportionate share of total revenue.
 - **Margaret Peacock** generates the highest total revenue, contributing **18.47%** of the total.
-- However, revenue does not directly correlate with order volume. **Robert King**, for example, generates the highest average revenue per order at approximately **1.962**, despite handling fewer orders than the top sales-volume employees.
+- However, revenue does not directly correlate with order volume. **Robert King**, for example, generates the highest average revenue per order at approximately **1,962**, despite handling fewer orders than the top sales-volume employees.
 - This suggests that employee performance differs not only in sales volume, but also in the average value of the orders handled.
 
 ### 5.6 Shipping Performance
@@ -151,7 +150,7 @@ To uniquely identify each order detail record, the combination of:
 
 - Revenue is relatively well distributed across the three shipping companies. **United Package** generates the largest share at **42.28%**, followed by **Federal Shipping** at **30.10%** and **Speedy Express** at **27.61%**.
 - Shipping time varies across carriers. **Federal Shipping** has the shortest average shipping time at **7.47 days**, compared with **8.57 days** for Speedy Express and **9.23 days** for United Package.
-- Despite being the fastest carrier, Federal Shipping has the highest freight-to-average ratio at **5.03%**, while United Package has the lowest at **4.93%**.
+- Despite being the fastest carrier, Federal Shipping has the highest freight cost relative to average order value at **5.03%**, while United Package has the lowest at **4.93%**.
 ### 5.7 Best Product per Category
 
 ![SQL-Northwind-Traders](Images/8.Best_product_of_each_category.png)
@@ -178,6 +177,6 @@ Data Analyst
 
 Tokyo, Japan
 
-LinkedIn: www.linkedin.com/in/ramon-garcia-rico-8702202a0
+LinkedIn: [linkedin.com/in/ramon-garcia-rico-8702202a0](https://www.linkedin.com/in/ramon-garcia-rico-8702202a0)
 
 
