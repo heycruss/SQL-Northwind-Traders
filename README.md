@@ -90,6 +90,8 @@ To uniquely identify each order detail record, the combination of:
 
 ### 5.1 Revenue Analysis
 
+![Dashboard Preview](images/Revenue over time.png)
+
 ### 5.2 Product Performance
 
 ### 5.3 Category Performance
