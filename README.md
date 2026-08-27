@@ -170,6 +170,14 @@ To uniquely identify each order detail record, the combination of:
 - **SQL** — Data transformation, aggregation and analytical queries
 - **Git & GitHub** — Version control and project documentation
 
+# Author
 
+**Ramón García Rico**
+
+Data Analyst
+
+Tokyo, Japan
+
+LinkedIn: www.linkedin.com/in/ramon-garcia-rico-8702202a0
 
 
