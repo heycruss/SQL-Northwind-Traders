@@ -94,15 +94,36 @@ To uniquely identify each order detail record, the combination of:
 
 ### 5.2 Product Performance
 
+![SQL-Northwind-Traders](Images/2.1.Products_and_revenue.png)
+
+![SQL-Northwind-Traders](Images/3.1.Best_product_every_month.png)
+![SQL-Northwind-Traders](Images/3.2.Best_product_every_year.png)
+
+
 ### 5.3 Category Performance
+
+![SQL-Northwind-Traders](Images/4.1.Revenue_by_category.png)
+
+![SQL-Northwind-Traders](Images/4.1.Revenue_growth_by_category.png)
 
 ### 5.4 Customer Analysis
 
+![SQL-Northwind-Traders](Images/5.1.Revenue_by_customer.png)
+
+![SQL-Northwind-Traders](Images/5.1.Customers_loyalty.png)
+
+
 ### 5.5 Employee Performance
+
+![SQL-Northwind-Traders](Images/6.Employee_analysis.png)
 
 ### 5.6 Shipping Performance
 
+![SQL-Northwind-Traders](Images/6.Shipper_analysis.png)
+
 ### 5.7 Best Product per Category
+
+![SQL-Northwind-Traders](Images/8.Best_product_of_each_caterogy.png)
 
 ## 6. Key Findings
 
