@@ -92,8 +92,6 @@ To uniquely identify each order detail record, the combination of:
 
 ![SQL-Northwind-Traders](Images/1.Revenue_over_time.png)
 
-**Key insights:**
-
 - Revenue shows a strong overall upward trend over the analyzed period, despite significant month-to-month fluctuations.
 - Monthly revenue is highly volatile, with several periods showing substantial increases and decreases.
 - In 2014, particularly high revenue was observed in January, October, and December, with December showing a strong 68.75% increase compared with the previous month.
