@@ -104,11 +104,11 @@ To uniquely identify each order detail record, the combination of:
 
 ![SQL-Northwind-Traders](Images/4.1.Revenue_by_category.png)
 
-![SQL-Northwind-Traders](Images/4.1.Revenue_growth_by_category.png)
+![SQL-Northwind-Traders](Images/4.2.Revenue_growth_by_category.png)
 
 ### 5.4 Customer Analysis
 
-![SQL-Northwind-Traders](Images/5.1.Revenue_by_customer.png)
+![SQL-Northwind-Traders](Images/5.1.Revenue_by_customers.png)
 
 ![SQL-Northwind-Traders](Images/5.1.Customers_loyalty.png)
 
