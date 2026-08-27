@@ -101,9 +101,19 @@ To uniquely identify each order detail record, the combination of:
 
 ![SQL-Northwind-Traders](Images/2.1.Products_and_revenue.png)
 
-![SQL-Northwind-Traders](Images/3.1.Best_product_every_month.png)
-![SQL-Northwind-Traders](Images/3.2.Best_product_every_year.png)
 
+- With 57 products in the dataset, an equal distribution of revenue would result in approximately **1.75% per product**.
+- Revenue is highly concentrated among a small number of products. **Côte de Blaye** is the strongest-performing product, generating **11.07%** of total revenue, followed by **Thüringer Rostbratwurst (6.48%)** and **Raclette Courdavault (5.63%)**.
+- The **top 3 products account for 23.18% of total revenue**, showing a significant concentration of revenue among the best-performing products.
+- After the top three products, revenue becomes considerably more distributed, with most products contributing between approximately **0.1% and 4%** of total revenue.
+
+![SQL-Northwind-Traders](Images/3.1.Best_product_every_month.png)
+
+
+- The leading product varies considerably across months, indicating that revenue performance is not consistently driven by a single product.
+- Several products repeatedly appear as monthly revenue leaders, particularly **Côte de Blaye**, **Raclette Courdavault**, and **Thüringer Rostbratwurst**.
+- **Côte de Blaye** appears particularly frequently as the top-performing product around the end and beginning of the year. Its repeated strong performance during these periods may indicate a **potential seasonal pattern** that would require further analysis to confirm.
+- The revenue share of the monthly top-performing product also varies significantly, ranging from approximately **7.8% to 33.9%**, showing that the degree of revenue concentration changes considerably between months.
 
 ### 5.3 Category Performance
 
