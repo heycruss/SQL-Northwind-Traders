@@ -16,7 +16,7 @@ This analysis aims to answer the following business questions:
 
 3. Which products drive revenue across different time periods?
 
-4. Which categories generate the most revenue, and how does their performance evolve over time?
+4. Which categories generate the most revenue?
 
 5. Which customers generate the most revenue, and which customers show the highest level of repeat purchasing?
 
@@ -119,26 +119,49 @@ To uniquely identify each order detail record, the combination of:
 
 ![SQL-Northwind-Traders](Images/4.1.Revenue_by_category.png)
 
-![SQL-Northwind-Traders](Images/4.2.Revenue_growth_by_category.png)
+
+- Revenue is relatively well distributed across product categories. Beverages and Dairy Products are the two largest contributors, accounting for 21.15% and 18.56% of total revenue respectively, while the remaining categories each contribute between approximately 7% and 13%.
+
 
 ### 5.4 Customer Analysis
 
 ![SQL-Northwind-Traders](Images/5.1.Revenue_by_customers.png)
 
-![SQL-Northwind-Traders](Images/5.1.Customers_loyalty.png)
+
+- Revenue shows a clear concentration among the top customers. **QUICK, SAVEA, and ERNSH** are the three largest customers, generating **8.67%, 8.54%, and 8.36%** of total revenue respectively.
+- These three customers collectively account for **25.57% of total revenue**, meaning that approximately one quarter of revenue comes from just three customers.
+- There is a significant drop after the top three customers, with the fourth-largest customer contributing 4.23% and the fifth 3.86%.
+- Beyond the largest customers, revenue is distributed much more gradually across the customer base, with a long tail of customers contributing relatively small shares individually.
 
 
 ### 5.5 Employee Performance
 
 ![SQL-Northwind-Traders](Images/6.Employee_analysis.png)
 
+
+- Revenue is relatively well distributed across employees, with no single employee accounting for a disproportionate share of total revenue.
+- **Margaret Peacock** generates the highest total revenue, contributing **18.47%** of the total.
+- However, revenue does not directly correlate with order volume. **Robert King**, for example, generates the highest average revenue per order at approximately **1.962**, despite handling fewer orders than the top sales-volume employees.
+- This suggests that employee performance differs not only in sales volume, but also in the average value of the orders handled.
+
 ### 5.6 Shipping Performance
 
 ![SQL-Northwind-Traders](Images/7.Shipper_analysis.png)
 
+
+- Revenue is relatively well distributed across the three shipping companies. **United Package** generates the largest share at **42.28%**, followed by **Federal Shipping** at **30.10%** and **Speedy Express** at **27.61%**.
+- Shipping time varies across carriers. **Federal Shipping** has the shortest average shipping time at **7.47 days**, compared with **8.57 days** for Speedy Express and **9.23 days** for United Package.
+- Despite being the fastest carrier, Federal Shipping has the highest freight-to-average ratio at **5.03%**, while United Package has the lowest at **4.93%**.
 ### 5.7 Best Product per Category
 
 ![SQL-Northwind-Traders](Images/8.Best_product_of_each_category.png)
+
+
+- Several categories show a strong concentration of revenue around a single product.
+- **Côte de Blaye** is the clearest example, generating **52.35%** of the total revenue within the Beverages category.
+- **Thüringer Rostbratwurst** and **Gnocchi di nonna Alice** also account for nearly half of their respective categories, with **49.24%** and **44.80%** of category revenue.
+- Other leading products such as **Manjimup Dried Apples** (42.50%) and **Raclette Courdavault** (30.36%) also represent a substantial share of their categories.
+- This suggests that some categories are highly dependent on a small number of products, while others have a more diversified revenue distribution.
 
 ## 6. Key Findings
 
