@@ -163,12 +163,13 @@ To uniquely identify each order detail record, the combination of:
 - Other leading products such as **Manjimup Dried Apples** (42.50%) and **Raclette Courdavault** (30.36%) also represent a substantial share of their categories.
 - This suggests that some categories are highly dependent on a small number of products, while others have a more diversified revenue distribution.
 
-## 6. Key Findings
 
-## 7. Tools & Technologies
+## 6. Tools & Technologies
 
-## 8. Project Structure
+- **MySQL** — Data cleaning, validation and analysis
+- **SQL** — Data transformation, aggregation and analytical queries
+- **Git & GitHub** — Version control and project documentation
 
-## 9. How to Run
 
-## 10. Conclusions
+
+
