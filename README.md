@@ -90,7 +90,7 @@ To uniquely identify each order detail record, the combination of:
 
 ### 5.1 Revenue Analysis
 
-![Dashboard](images/Revenue over time.png)
+![SQL-Northwind-Traders](Images/Revenue over time.png)
 
 ### 5.2 Product Performance
 
